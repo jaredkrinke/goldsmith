@@ -132,7 +132,7 @@ class GoldsmithObject {
             const inputDirectory = this.inputDirectory;
             const inputFilePaths = await enumerateFiles(inputDirectory);
             await Promise.all(inputFilePaths.map(async (path) => {
-                // TODO: Is there a better way to strip off the input directory name (plus slash)? path.relative requires additional permissions
+                // Note: path.relative requires access to current directory, so just use string manipulation here
                 const pathFromInputDirectory = path.slice(inputDirectory.length + 1);
                 files[pathFromInputDirectory] = { data: await Deno.readFile(path) };
             }));
@@ -181,6 +181,7 @@ class GoldsmithObject {
         const files = await this.run();
 
         // Output files by creating directories first and then writing files in parallel
+        // TODO: Ensure there are no ".." in the paths (and add corresponding test)
         for (const key of Object.keys(files)) {
             const dir = join(outputDirectory, dirname(key));
             await Deno.mkdir(dir, { recursive: true });
@@ -203,6 +204,5 @@ class GoldsmithObject {
     }
 }
 
-// TODO: Allow changing root directory?
 /** Initialize Goldsmith and return GoldsmithObject for using its fluent/chain-based API. */
 export const Goldsmith = () => new GoldsmithObject();
