@@ -3,20 +3,28 @@ import { posix } from "https://deno.land/std@0.113.0/path/mod.ts";
 // Normalize to POSIX/web (forward) slashes
 const { join, dirname } = posix;
 
+/** An untyped property bag */
 export type Metadata = {
     // TODO: Plugins can add arbitrary properties -- is there any way for plugins to advertise what they produce?
+    // TODO: Use unknown instead of any?
     // deno-lint-ignore no-explicit-any
     [propertyName: string]: any,
 };
 
+/** A file that will be created with the given content */
 export type File = Metadata & {
+    /** Content of the file */
     data: Uint8Array,
 };
 
+/** A set of files, indexed by the file's path from the output root (note: always uses web-style forward slashes) */
 export type Files = {
     [key: string]: File,
 };
 
+/** A plugin for Goldsmith. Plugins are synchronous or asynchronous functions that  can add/remove/transform files and also add/remove/manipulate global metadata.
+ * 
+ * Example: a plugin could transform *.md Markdown files to *.html files. */
 export type Plugin = (files: Files, goldsmith: GoldsmithObject) => (Promise<void> | void);
 
 function isPromise<T>(value: void | Promise<T>): value is Promise<T> {
@@ -36,11 +44,15 @@ async function enumerateFiles(directoryName: string): Promise<string[]> {
     return filePaths;
 }
 
+/** Goldsmith event that is fired when `build()` completes. */
 export type GoldsmithEventType = "built";
+
+/** Goldsmith event that is fired when `build()` completes. */
 export class GoldsmithBuiltEvent extends Event {
     constructor() { super("built"); }
 }
 
+/** Goldsmith's fluent/chaining API for generating a static site, given an input directory, and a chain of plugins. */
 class GoldsmithObject {
     properties: Metadata = {};
     cleanOutputDirectory = false;
@@ -49,6 +61,11 @@ class GoldsmithObject {
     plugins: Plugin[] = [];
     events: EventTarget = new EventTarget();
 
+    /** Get or merge metadata into Goldsmith's global metadata.
+     * 
+     * `metadata()` returns the current global metadata
+     * `metadata({ key: value, ... }) merges properties into global metadata (and return GoldsmithObject for chaining)
+     */
     metadata(properties: Metadata): GoldsmithObject;
     metadata(): Metadata;
     metadata(properties?: Metadata): GoldsmithObject | Metadata {
@@ -60,6 +77,11 @@ class GoldsmithObject {
         }
     }
 
+    /** Get or set the input directory for Goldsmith.
+     * 
+     * `source()` returns the current input directory
+     * `source(directoryName) sets the input directory (and return GoldsmithObject for chaining)
+     */
     source(): string;
     source(directoryName: string): GoldsmithObject;
     source(directoryName?: string): GoldsmithObject | string {
@@ -71,6 +93,11 @@ class GoldsmithObject {
         }
     }
 
+    /** Get or set the output directory for Goldsmith.
+     * 
+     * `source()` returns the current output directory
+     * `source(directoryName) sets the output directory (and return GoldsmithObject for chaining)
+     */
     destination(): string;
     destination(directoryName: string): GoldsmithObject
     destination(directoryName?: string): GoldsmithObject | string {
@@ -82,16 +109,22 @@ class GoldsmithObject {
         }
     }
 
+    /** Tell Goldsmith to clear the output directory (or not) prior to writing out files (and return GoldsmithObject for chaining).
+     * 
+     * Note: files in the output directory that start with "." (e.g. ".git") are left alone.
+    */
     clean(clean: boolean): GoldsmithObject {
         this.cleanOutputDirectory = clean;
         return this;
     }
 
+    /** Add a plugin to Goldsmith's plugin chain (and return GoldsmithObject for chaining). */
     use(plugin: Plugin): GoldsmithObject {
         this.plugins.push(plugin);
         return this;
     }
 
+    /** Read the input directory and execute the current sequence of plugins and return the (in-memory only) set of files that should be produced. */
     async run(): Promise<Files> {
         // Read files
         const files: Files = {};
@@ -116,6 +149,7 @@ class GoldsmithObject {
         return files;
     }
 
+    /** Read the input directory, execute the current sequence of plugins, clean the output directory (if requested), and write all produced files to the output directory. */
     async build(): Promise<void> {
         // Check options
         if (!this.outputDirectory) {
@@ -158,14 +192,17 @@ class GoldsmithObject {
         this.events.dispatchEvent(new GoldsmithBuiltEvent());
     }
 
+    /** Add an event listener to Goldsmith (currently, only the "built" event is supported). */
     addEventListener(type: GoldsmithEventType, listener: (event: GoldsmithBuiltEvent) => void): void {
         this.events.addEventListener(type, listener);
     }
 
+    /** Remove an event listener from Goldsmith. */
     removeEventListener(type: GoldsmithEventType, listener: (event: GoldsmithBuiltEvent) => void): void {
         this.events.removeEventListener(type, listener);
     }
 }
 
 // TODO: Allow changing root directory?
+/** Initialize Goldsmith and return GoldsmithObject for using its fluent/chain-based API. */
 export const Goldsmith = () => new GoldsmithObject();
