@@ -69,6 +69,8 @@ class GoldsmithObject {
     plugins: Plugin[] = [];
     events: EventTarget = new EventTarget();
 
+    // TODO: Expose TextEncoder and TextDecoder since they're used so often?
+
     /** Get or merge metadata into Goldsmith's global metadata.
      * 
      * `metadata()` returns the current global metadata
