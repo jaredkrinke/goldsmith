@@ -1,5 +1,5 @@
-import { assertEquals } from "https://deno.land/std@0.113.0/testing/asserts.ts";
-import { Goldsmith } from "./mod.ts";
+import { assertEquals, assertThrowsAsync } from "https://deno.land/std@0.113.0/testing/asserts.ts";
+import { Goldsmith, GoldsmithError } from "./mod.ts";
 
 Deno.test({
     name: "Create output directory",
@@ -26,4 +26,11 @@ Deno.test({
     },
 });
 
-// TODO: Test reading files with subdirs, output outside root (should fail), metadata get/set, clean vs not, no output directory, built event
+Deno.test({
+    name: "Output directory is required",
+    fn: async () => {
+        await assertThrowsAsync<GoldsmithError>(() => Goldsmith().build());
+    },
+});
+
+// TODO: Test reading files with subdirs, output outside root (should fail), metadata get/set, clean vs not, built event

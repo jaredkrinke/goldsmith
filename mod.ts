@@ -52,6 +52,14 @@ export class GoldsmithBuiltEvent extends Event {
     constructor() { super("built"); }
 }
 
+/** Goldsmith-specific error class */
+export class GoldsmithError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "GoldsmithError";
+    }
+}
+
 /** Goldsmith's fluent/chaining API for generating a static site, given an input directory, and a chain of plugins. */
 class GoldsmithObject {
     properties: Metadata = {};
@@ -153,7 +161,7 @@ class GoldsmithObject {
     async build(): Promise<void> {
         // Check options
         if (!this.outputDirectory) {
-            throw "Output directory must be specified using: .destination(\"something\")";
+            throw new GoldsmithError("Output directory must be specified using: .destination(\"something\")");
         }
 
         // Clean, if requested
