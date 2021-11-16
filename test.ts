@@ -25,3 +25,5 @@ Deno.test({
         assertEquals(true, directoryExists, "Output directory should have been created.");
     },
 });
+
+// TODO: Test reading files with subdirs, output outside root (should fail), metadata get/set, clean vs not, no output directory, built event

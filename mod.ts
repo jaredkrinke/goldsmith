@@ -124,7 +124,7 @@ class GoldsmithObject {
         return this;
     }
 
-    /** Read the input directory and execute the current sequence of plugins and return the (in-memory only) set of files that should be produced. */
+    /** Read the input directory and execute the current sequence of plugins and return the (in-memory only) set of files that should be produced. This is especially useful for testing. */
     async run(): Promise<Files> {
         // Read files
         const files: Files = {};
