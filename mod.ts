@@ -80,7 +80,7 @@ class GoldsmithObject {
     /** Get or set the input directory for Goldsmith.
      * 
      * `source()` returns the current input directory
-     * `source(directoryName) sets the input directory (and return GoldsmithObject for chaining)
+     * `source(directoryName)` sets the input directory (and return GoldsmithObject for chaining)
      */
     source(): string;
     source(directoryName: string): GoldsmithObject;
@@ -182,6 +182,7 @@ class GoldsmithObject {
 
         // Output files by creating directories first and then writing files in parallel
         // TODO: Ensure there are no ".." in the paths (and add corresponding test)
+        await Deno.mkdir(outputDirectory, { recursive: true });
         for (const key of Object.keys(files)) {
             const dir = join(outputDirectory, dirname(key));
             await Deno.mkdir(dir, { recursive: true });
