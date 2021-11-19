@@ -1,7 +1,6 @@
 import { assert, assertEquals, assertThrowsAsync } from "https://deno.land/std@0.113.0/testing/asserts.ts";
 import { Goldsmith, GoldsmithError } from "./mod.ts";
 
-// TODO: Fix order of assert arguments
 async function createDirectoryIfNeededAsync(path: string): Promise<void> {
     try {
         await Deno.mkdir(path);
@@ -42,7 +41,7 @@ Deno.test({
                 .destination(dir)
                 .build();
     
-            assertEquals(true, await directoryExistsAsync(dir), "Output directory should have been created.");
+            assert(await directoryExistsAsync(dir), "Output directory should have been created.");
         } finally {
             await deleteIfNeededAsync(dir);
         }
@@ -68,7 +67,7 @@ Deno.test({
                 .destination(dir)
                 .build();
     
-            assertEquals(true, await fileExistsAsync("out/subdir/test.txt"), "File from subdirectory should have been copied.");
+            assert(await fileExistsAsync("out/subdir/test.txt"), "File from subdirectory should have been copied.");
         } finally {
             await deleteIfNeededAsync(dir);
         }
@@ -90,7 +89,7 @@ Deno.test({
                 .destination(dir)
                 .build(), GoldsmithError);
     
-            assertEquals(false, await fileExistsAsync("test.txt"), "File from subdirectory should have been copied.");
+            assertEquals(await fileExistsAsync("test.txt"), false, "File from subdirectory should have been copied.");
         } finally {
             await deleteIfNeededAsync(dir);
         }
@@ -109,7 +108,7 @@ Deno.test({
                 .destination("out")
                 .build();
     
-            assertEquals(true, await fileExistsAsync(filePath), "Extra file should have been left alone.");
+            assert(await fileExistsAsync(filePath), "Extra file should have been left alone.");
         } finally {
             await deleteIfNeededAsync("out");
         }
@@ -131,8 +130,8 @@ Deno.test({
                 .clean(true)
                 .build();
     
-            assertEquals(false, await fileExistsAsync(filePath), "Extra file should have been deleted.");
-            assertEquals(true, await fileExistsAsync(dotFilePath), "Extra file starting with a dot should have been left alone.");
+            assertEquals(await fileExistsAsync(filePath), false, "Extra file should have been deleted.");
+            assert(await fileExistsAsync(dotFilePath), "Extra file starting with a dot should have been left alone.");
         } finally {
             await deleteIfNeededAsync("out");
         }
