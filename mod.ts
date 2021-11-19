@@ -232,7 +232,6 @@ class GoldsmithObject {
         const files = await this.run();
 
         // Output files by creating directories first and then writing files in parallel
-        // TODO: Ensure there are no ".." in the paths (and add corresponding test)
         await Deno.mkdir(outputDirectory, { recursive: true });
         for (const key of Object.keys(files)) {
             const dir = join(outputDirectory, dirname(key));
