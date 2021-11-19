@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertThrowsAsync } from "https://deno.land/std@0.113.0/testing/asserts.ts";
+import { assert, assertEquals, assertThrowsAsync } from "./deps.test.ts";
 import { Goldsmith, GoldsmithError } from "./mod.ts";
 
 async function createDirectoryIfNeededAsync(path: string): Promise<void> {
