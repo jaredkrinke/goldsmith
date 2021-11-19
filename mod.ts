@@ -3,29 +3,52 @@ import { posix } from "https://deno.land/std@0.113.0/path/mod.ts";
 // Normalize to POSIX/web (forward) slashes
 const { join, dirname } = posix;
 
-/** An untyped property bag */
-export type Metadata = {
-    // TODO: Plugins can add arbitrary properties -- is there any way for plugins to advertise what they produce?
-    // TODO: Use unknown instead of any?
-    // deno-lint-ignore no-explicit-any
-    [propertyName: string]: any,
-};
+/** Goldsmith's global metadata.
+ * 
+ * Plugins that add properties that are known at compile time should extend this definition to add all properties (as
+ * optional properties), using declaration merging. Example:
+ * 
+ * ```typescript
+ * declare module "./deps.ts" {
+ *   interface GoldsmithMetadata {
+ *     buildDate?: Date;
+ *   }
+ *}
+ * ```
+ * */
+export interface GoldsmithMetadata {
+    [propertyName: string]: unknown;
+}
 
-/** A file that will be created with the given content */
-export type File = Metadata & {
+/** A file that will be written out by Goldsmith.
+ * 
+ * Plugins that add properties that are known at compile time should extend this definition to add all properties (as
+ * optional properties), using declaration merging. Example:
+ * 
+ * ```typescript
+ * declare module "./deps.ts" {
+ *   interface GoldsmithFile {
+ *     pathToRoot?: string;
+ *   }
+ *}
+ * ```
+ * */
+ export interface GoldsmithFile {
     /** Content of the file */
-    data: Uint8Array,
-};
+    data: Uint8Array;
 
-/** A set of files, indexed by the file's path from the output root (note: always uses web-style forward slashes) */
-export type Files = {
-    [key: string]: File,
-};
+    [propertyName: string]: unknown;
+}
+
+/** A set of files, indexed by the file's path from the output root (note: always uses web-style forward slashes). */
+export interface GoldsmithFileCollection {
+    [filePath: string]: GoldsmithFile,
+}
 
 /** A plugin for Goldsmith. Plugins are synchronous or asynchronous functions that  can add/remove/transform files and also add/remove/manipulate global metadata.
  * 
  * Example: a plugin could transform *.md Markdown files to *.html files. */
-export type Plugin = (files: Files, goldsmith: GoldsmithObject) => (Promise<void> | void);
+export type GoldsmithPlugin = (files: GoldsmithFileCollection, goldsmith: GoldsmithObject) => (Promise<void> | void);
 
 function isPromise<T>(value: void | Promise<T>): value is Promise<T> {
     return !!(value && value.then);
@@ -60,13 +83,13 @@ export class GoldsmithError extends Error {
     }
 }
 
-/** Goldsmith's fluent/chaining API for generating a static site, given an input directory, and a chain of plugins. */
+/** Goldsmith's fluent API for generating a static site, given an input directory, and a chain of plugins. */
 class GoldsmithObject {
-    properties: Metadata = {};
+    properties: GoldsmithMetadata = {};
     cleanOutputDirectory = false;
     inputDirectory?: string;
     outputDirectory?: string;
-    plugins: Plugin[] = [];
+    plugins: GoldsmithPlugin[] = [];
     events: EventTarget = new EventTarget();
 
     // TODO: Expose TextEncoder and TextDecoder since they're used so often?
@@ -76,9 +99,9 @@ class GoldsmithObject {
      * `metadata()` returns the current global metadata
      * `metadata({ key: value, ... }) merges properties into global metadata (and return GoldsmithObject for chaining)
      */
-    metadata(properties: Metadata): GoldsmithObject;
-    metadata(): Metadata;
-    metadata(properties?: Metadata): GoldsmithObject | Metadata {
+    metadata(properties: GoldsmithMetadata): GoldsmithObject;
+    metadata(): GoldsmithMetadata;
+    metadata(properties?: GoldsmithMetadata): GoldsmithObject | GoldsmithMetadata {
         if (properties) {
             Object.assign(this.properties, properties);
             return this;
@@ -129,15 +152,15 @@ class GoldsmithObject {
     }
 
     /** Add a plugin to Goldsmith's plugin chain (and return GoldsmithObject for chaining). */
-    use(plugin: Plugin): GoldsmithObject {
+    use(plugin: GoldsmithPlugin): GoldsmithObject {
         this.plugins.push(plugin);
         return this;
     }
 
     /** Read the input directory and execute the current sequence of plugins and return the (in-memory only) set of files that should be produced. This is especially useful for testing. */
-    async run(): Promise<Files> {
+    async run(): Promise<GoldsmithFileCollection> {
         // Read files
-        const files: Files = {};
+        const files: GoldsmithFileCollection = {};
         if (this.inputDirectory) {
             const inputDirectory = this.inputDirectory;
             const inputFilePaths = await enumerateFiles(inputDirectory);
