@@ -189,6 +189,14 @@ class GoldsmithObject {
             }
         }
 
+        // Ensure file paths are valid
+        const invalidPathPattern = /\.\.|\\|:|\/\//;
+        for (const filePath of Object.keys(files)) {
+            if (invalidPathPattern.test(filePath)) {
+                throw new GoldsmithError(`Invalid file path in "files" collection: ${filePath}`);
+            }
+        }
+
         return files;
     }
 

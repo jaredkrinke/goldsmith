@@ -89,7 +89,7 @@ Deno.test({
                 .destination(dir)
                 .build(), GoldsmithError);
     
-            assertEquals(await fileExistsAsync("test.txt"), false, "File from subdirectory should have been copied.");
+            assertEquals(await fileExistsAsync("test.txt"), false, "File should not be written outside output root.");
         } finally {
             await deleteIfNeededAsync(dir);
         }
@@ -159,7 +159,7 @@ Deno.test({
             })
             .run();
         
-        assertEquals(pluginExecuted, true);
+        assertEquals(pluginExecuted, true, "Plugin should have run");
     },
 });
 
@@ -185,7 +185,7 @@ Deno.test({
             })
             .run();
         
-        assertEquals(pluginExecuted, true);
+        assertEquals(pluginExecuted, true, "Plugin should have run");
     },
 });
 
