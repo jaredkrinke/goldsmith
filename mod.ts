@@ -91,8 +91,18 @@ class GoldsmithObject {
     outputDirectory?: string;
     plugins: GoldsmithPlugin[] = [];
     events: EventTarget = new EventTarget();
+    textEncoder = new TextEncoder();
+    textDecoder = new TextDecoder();
 
-    // TODO: Expose TextEncoder and TextDecoder since they're used so often?
+    /** UTF-8 wrapper for TextEncoder.encode(), provided for convenience. */
+    encodeUTF8(str: string): Uint8Array {
+        return this.textEncoder.encode(str);
+    }
+
+    /** UTF-8 wrapper for TextEncoder.decode(), provided for convenience. */
+    decodeUTF8(bytes: Uint8Array): string {
+        return this.textDecoder.decode(bytes);
+    }
 
     /** Get or merge metadata into Goldsmith's global metadata.
      * 
