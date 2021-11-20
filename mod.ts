@@ -1,4 +1,5 @@
 import { posix } from "https://deno.land/std@0.113.0/path/mod.ts";
+import { deepMerge } from "https://deno.land/std@0.113.0/collections/deep_merge.ts";
 
 // Normalize to POSIX/web (forward) slashes
 const { join, dirname } = posix;
@@ -113,7 +114,7 @@ export class GoldsmithObject {
     metadata(): GoldsmithMetadata;
     metadata(properties?: GoldsmithMetadata): GoldsmithObject | GoldsmithMetadata {
         if (properties) {
-            Object.assign(this.properties, properties);
+            this.properties = deepMerge<Record<string, unknown>>(this.properties, properties);
             return this;
         } else {
             return this.properties;
