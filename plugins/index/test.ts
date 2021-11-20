@@ -15,6 +15,10 @@ Deno.test({
             })
             .use(goldsmithIndex({
                 pattern,
+                property: "title",
+            }))
+            .use(goldsmithIndex({
+                pattern,
                 property: "keywords",
                 createTermIndexPath: term => `index_${term}.html`,
             }))
@@ -24,6 +28,10 @@ Deno.test({
                 assert(files["index_yaml.html"] !== undefined);
                 assert(metadata.indexes!.keywords[files["index_goldsmith.html"].term!].map(f => f.title).join(", "), "A post about both Goldsmith and YAML, A post about only Goldsmith");
                 assert(metadata.indexes!.keywords[files["index_yaml.html"].term!].map(f => f.title).join(", "), "A post about both Goldsmith and YAML, A post about only YAML");
+
+                // Check an additional index
+                assertEquals(Object.keys(metadata.indexes!.title).length, 3, "Title index should also have been created");
+
                 pluginExecuted = true;
             })
             .run();
@@ -32,4 +40,4 @@ Deno.test({
     },
 });
 
-// TODO: Test patterns and without term index pages, multiple indexes
+// TODO: Test patterns
