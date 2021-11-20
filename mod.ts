@@ -84,7 +84,7 @@ export class GoldsmithError extends Error {
 }
 
 /** Goldsmith's fluent API for generating a static site, given an input directory, and a chain of plugins. */
-class GoldsmithObject {
+export class GoldsmithObject {
     properties: GoldsmithMetadata = {};
     cleanOutputDirectory = false;
     inputDirectory?: string;
