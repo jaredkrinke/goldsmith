@@ -26,12 +26,12 @@ export interface GoldsmithIndexOptions {
      * 
      * For example, if there should be a "category" page containing links to each post in the category, this could simply be: `` (term) => `categories/${term}.html` ``.
     */
-    createTermPagePath?: (term: string) => string;
+    createTermIndexPath?: (term: string) => string;
 }
 
 /** Goldsmith plugin for creating an index (and, optionally, index pages for each unique term) over a single property on a set of files. */
 export function goldsmithIndex(options: GoldsmithIndexOptions): GoldsmithPlugin {
-    const { pattern, createTermPagePath } = options;
+    const { pattern, createTermIndexPath } = options;
     const propertyName = options.property;
     return (files, goldsmith) => {
         const index: { [term: string]: GoldsmithFile[] } = {};
@@ -51,9 +51,9 @@ export function goldsmithIndex(options: GoldsmithIndexOptions): GoldsmithPlugin 
         const { ...rest } = metadata.indexes ?? {};
         metadata.indexes = { [propertyName]: index, ...rest };
 
-        if (createTermPagePath) {
+        if (createTermIndexPath) {
             for (const term of Object.keys(index)) {
-                files[createTermPagePath(term)] = {
+                files[createTermIndexPath(term)] = {
                     term,
                     isTermIndex: true,
                     data: new Uint8Array(0),
