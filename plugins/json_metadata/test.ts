@@ -19,7 +19,6 @@ Deno.test({
             .use((_files, goldsmith) => {
                 assertEquals(goldsmith.metadata().site, testMetadata);
                 pluginExecuted = true;
-                console.log(goldsmith.metadata());
             })
             .run();
     
