@@ -1,7 +1,8 @@
 import { GoldsmithPlugin } from "../../mod.ts";
 
-type GoldsmithJSONMetadataOptions = string | { [property: string]: string };
+export type GoldsmithJSONMetadataOptions = string | { [property: string]: string };
 
+/** Goldsmith plugin for reading global metadata from one or more JSON files. */
 export function goldsmithJSONMetadata(stringOrOptions: GoldsmithJSONMetadataOptions): GoldsmithPlugin {
     const rows: { path: string, propertyName?: string }[] = [];
     if (typeof(stringOrOptions) === "string") {

@@ -1,5 +1,6 @@
 import { GoldsmithPlugin } from "../../mod.ts";
 
+/** Trivial Goldsmith plugin for logging Goldsmith's global and per-file metadata to the console during a build. */
 export function goldsmithLogMetadata(): GoldsmithPlugin {
     return (files, goldsmith) => {
         const fileInfo: { [path: string]: { [prop: string]: unknown } } = {};
