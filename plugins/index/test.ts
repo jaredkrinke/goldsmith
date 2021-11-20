@@ -32,4 +32,4 @@ Deno.test({
     },
 });
 
-// TODO: Test patterns and without term index pages
+// TODO: Test patterns and without term index pages, multiple indexes

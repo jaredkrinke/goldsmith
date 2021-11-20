@@ -47,6 +47,7 @@ export function goldsmithIndex(options: GoldsmithIndexOptions): GoldsmithPlugin 
             }
         }
 
+        // TODO: Deep merge instead!
         const metadata = goldsmith.metadata();
         const { ...rest } = metadata.indexes ?? {};
         metadata.indexes = { [propertyName]: index, ...rest };
