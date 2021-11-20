@@ -25,6 +25,9 @@ This is just normal Markdown content here.
 And this plugin configured as follows:
 
 ```typescript
+import { Goldsmith } from "./path/to/goldsmith/mod.ts";
+import { goldsmithFrontMatter } from "./path/to/front_matter/mod.ts";
+
 await Goldsmith()
     .source("content")
     .destination("out")

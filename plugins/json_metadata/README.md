@@ -26,6 +26,9 @@ Given `content/site.json` as follows:
 And this plugin configured as follows:
 
 ```typescript
+import { Goldsmith } from "./path/to/goldsmith/mod.ts";
+import { goldsmithJSONMetadata } from "./path/to/json_metadata/mod.ts";
+
 await Goldsmith()
     .source("content")
     .destination("out")

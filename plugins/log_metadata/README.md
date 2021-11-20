@@ -5,6 +5,9 @@ Debugging a build live is usually a better option, but this plugin can be helpfu
 
 # API
 ```typescript
+import { Goldsmith } from "./path/to/goldsmith/mod.ts";
+import { goldsmithLogMetadata } from "./path/to/log_metadata/mod.ts";
+
 await Goldsmith()
     ... // Other plugins go here
     .use(goldsmithLogMetadata())
