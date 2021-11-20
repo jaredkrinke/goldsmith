@@ -3,6 +3,8 @@ Goldsmith plugin for reading global metadata from one or more JSON files.
 
 This plugin can be used to, for example, read in a `site.json` JSON file and assign all its properties to a `site` property in Goldsmith's global metadata.
 
+Note that the JSON file is removed from the file collection, so it won't be copied to the output directory.
+
 # API
 ## goldsmithJSONMetadata(options)
 
