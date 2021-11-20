@@ -19,6 +19,7 @@ Deno.test({
             .use((_files, goldsmith) => {
                 assertEquals(goldsmith.metadata().site, testMetadata);
                 pluginExecuted = true;
+                console.log(goldsmith.metadata());
             })
             .run();
     
@@ -56,6 +57,32 @@ Deno.test({
             .use(goldsmithJSONMetadata("site.json"))
             .use((_files, goldsmith) => {
                 assertEquals(goldsmith.metadata(), testMetadata);
+                pluginExecuted = true;
+            })
+            .run();
+    
+        assert(pluginExecuted, "Verification plugin should have run");
+    },
+});
+
+Deno.test({
+    name: "Properties are read from multiple JSON files",
+    fn: async () => {
+        const testMetadata2 = { test2: "Test2!" };
+
+        let pluginExecuted = false;
+        await Goldsmith()
+            .use((files, goldsmith) => {
+                files["site.json"] = { data: goldsmith.encodeUTF8(JSON.stringify(testMetadata))};
+                files["other/file.json"] = { data: goldsmith.encodeUTF8(JSON.stringify(testMetadata2))};
+            })
+            .use(goldsmithJSONMetadata({
+                "site.json": "site",
+                "other/file.json": "other",
+            }))
+            .use((_files, goldsmith) => {
+                assertEquals(goldsmith.metadata().site, testMetadata);
+                assertEquals(goldsmith.metadata().other, testMetadata2);
                 pluginExecuted = true;
             })
             .run();
