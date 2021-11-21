@@ -2,8 +2,10 @@ import { GoldsmithFile, GoldsmithMetadata, GoldsmithPlugin } from "../../mod.ts"
 
 type GoldsmithFileMetadataOnly = Omit<GoldsmithFile, "data">;
 
+type GoldsmithInjectFilesDataCallback = (metadata: GoldsmithMetadata) => (Uint8Array | string);
+
 type GoldsmithInjectedFile = GoldsmithFileMetadataOnly & {
-    data?: string | Uint8Array | ((metadata: GoldsmithMetadata) => Uint8Array);
+    data?: string | Uint8Array | GoldsmithInjectFilesDataCallback;
 };
 
 export interface GoldsmithInjectFilesOptions {
@@ -25,7 +27,18 @@ export function goldsmithInjectFiles(options: GoldsmithInjectFilesOptions): Gold
                     break;
                 
                 case "function":
-                    data = stringOrDataOrCallback(goldsmith.metadata());
+                    {
+                        const stringOrBytes = stringOrDataOrCallback(goldsmith.metadata());
+                        switch (typeof(stringOrBytes)) {
+                            case "string":
+                                data = goldsmith.encodeUTF8(stringOrBytes);
+                                break;
+                            
+                            default:
+                                data = stringOrBytes;
+                                break;
+                        }
+                    }
                     break;
 
                 default:
