@@ -1,4 +1,4 @@
-import type { GoldsmithFile, GoldsmithMetadata, GoldsmithPlugin } from "../../mod.ts";
+import type { GoldsmithFile, GoldsmithObject, GoldsmithPlugin } from "../../mod.ts";
 
 declare module "../../mod.ts" {
     interface GoldsmithFile {
@@ -6,7 +6,7 @@ declare module "../../mod.ts" {
     }
 }
 
-export type GoldsmithLayoutCallback = (file: GoldsmithFile, metadata: GoldsmithMetadata) => Uint8Array;
+export type GoldsmithLayoutCallback = (file: GoldsmithFile, goldsmith: GoldsmithObject) => (string | undefined);
 
 export interface GoldsmithLayoutOptions {
     pattern: RegExp;
@@ -16,11 +16,13 @@ export interface GoldsmithLayoutOptions {
 export function goldsmithLayout(options: GoldsmithLayoutOptions): GoldsmithPlugin {
     const { pattern, layout } = options;
     return (files, goldsmith) => {
-        const metadata = goldsmith.metadata(); 
         for (const key of Object.keys(files)) {
             if (pattern.test(key)) {
                 const file = files[key];
-                file.data = layout(file, metadata);
+                const result = layout(file, goldsmith);
+                if (result !== undefined) {
+                    file.data = goldsmith.encodeUTF8(result);
+                }
             }
         }
     };

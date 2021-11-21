@@ -15,23 +15,21 @@ export interface GoldsmithLiteralHTMLOptions {
 
 export function goldsmithLayoutLiteralHTML(options: GoldsmithLiteralHTMLOptions): GoldsmithLayoutCallback {
     const { templates, defaultTemplate } = options;
-    const textEncoder = new TextEncoder();
-    const textDecoder = new TextDecoder();
-    return (file, metadata) => {
+    return (file, goldsmith) => {
         const layoutKey = file.layout ?? defaultTemplate;
         if (!layoutKey) {
             // File opted out of layouts
-            return file.data;
+            return;
         } else {
             const layout = templates[layoutKey];
             if (!layout) {
                 throw `Unknown layout: ${layoutKey} (available layouts: ${Object.keys(templates).join(", ")})`;
             }
     
-            const source = textDecoder.decode(file.data);
-            const context = { ...metadata, ...file };
+            const source = goldsmith.decodeUTF8(file.data);
+            const context = { ...goldsmith.metadata(), ...file };
             const result = layout(source, context);
-            return textEncoder.encode(result);
+            return result;
         }
     };
 }
