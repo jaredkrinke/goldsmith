@@ -107,6 +107,10 @@ export class GoldsmithObject {
 
     /** Get or merge metadata into Goldsmith's global metadata.
      * 
+     * Note: when merging in new metadata, this will *not* replace existing objects, maps, sets, or arrays (it will
+     * merge/combine them). The `deepMerge` function from Deno's standard library is used, with the default "merge"
+     * strategy.
+     * 
      * `metadata()` returns the current global metadata
      * `metadata({ key: value, ... }) merges properties into global metadata (and return GoldsmithObject for chaining)
      */
@@ -114,7 +118,6 @@ export class GoldsmithObject {
     metadata(): GoldsmithMetadata;
     metadata(properties?: GoldsmithMetadata): GoldsmithObject | GoldsmithMetadata {
         if (properties) {
-            // TODO: Using deepMerge isn't a great idea here because it clones *everything* -- find or implement a "deepMergeInto" function that mutates the destination object
             this.properties = deepMerge<Record<string, unknown>>(this.properties, properties);
             return this;
         } else {
