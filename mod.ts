@@ -114,6 +114,7 @@ export class GoldsmithObject {
     metadata(): GoldsmithMetadata;
     metadata(properties?: GoldsmithMetadata): GoldsmithObject | GoldsmithMetadata {
         if (properties) {
+            // TODO: Using deepMerge isn't a great idea here because it clones *everything* -- find or implement a "deepMergeInto" function that mutates the destination object
             this.properties = deepMerge<Record<string, unknown>>(this.properties, properties);
             return this;
         } else {

@@ -47,11 +47,11 @@ export function goldsmithCollections(collectionMap: { [collectionName: string]: 
                 list.splice(limit);
             }
 
-            goldsmith.metadata({
-                collections: {
-                    [collectionKey]: list,
-                }
-            });
+            const metadata = goldsmith.metadata();
+            if (!metadata.collections) {
+                metadata.collections = {};
+            }
+            metadata.collections[collectionKey] = list;
         }
     };
 }

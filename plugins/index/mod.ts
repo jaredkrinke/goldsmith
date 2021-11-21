@@ -47,9 +47,9 @@ export function goldsmithIndex(options: GoldsmithIndexOptions): GoldsmithPlugin 
             }
         }
 
-        goldsmith.metadata({
-            indexes: { [propertyName]: index },
-        });
+        const metadata = goldsmith.metadata();
+        const { ...rest } = metadata.indexes ?? {};
+        metadata.indexes = { [propertyName]: index, ...rest };
 
         if (createTermIndexPath) {
             for (const term of Object.keys(index)) {
