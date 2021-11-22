@@ -48,7 +48,7 @@ const relativeLinkPattern = /^[^/][^:]*$/;
 export function goldsmithLinkChecker(): GoldsmithPlugin {
     const pattern = /^.+\.html$/; // TODO: Make customizable?
     return (files, goldsmith) => {
-        // Create a list of files to anchors
+        // Create a map of files to ids
         const fileToIds: { [filePath: string]: Set<string> } = {};
         for (const [filePath, file] of Object.entries(files)) {
             if (pattern.test(filePath)) {
@@ -77,7 +77,6 @@ export function goldsmithLinkChecker(): GoldsmithPlugin {
             img: "src",
         };
         
-
         for (const sourcePath of Object.keys(files)) {
             if (pattern.test(sourcePath)) {
                 const sourceHTML = goldsmith.decodeUTF8(files[sourcePath].data);
@@ -94,7 +93,7 @@ export function goldsmithLinkChecker(): GoldsmithPlugin {
                                     }
             
                                     const targetPath = targetParts[0];
-                                    const targetAnchor = targetParts[1];
+                                    const targetId = targetParts[1];
             
                                     // Check that link target exists, if provided
                                     let broken = false;
@@ -106,14 +105,14 @@ export function goldsmithLinkChecker(): GoldsmithPlugin {
                                         }
                                     }
             
-                                    // Check that anchor exists, if provided
-                                    if (!broken && targetAnchor) {
+                                    // Check that the id exists, if provided
+                                    if (!broken && targetId) {
                                         const targetIds = targetPathFromRoot
                                             ? fileToIds[targetPathFromRoot]
                                             : fileToIds[sourcePath];
             
-                                        // TODO: Validate anchor format first
-                                        if (!targetIds.has(targetAnchor)) {
+                                        // TODO: Validate id format first
+                                        if (!targetIds.has(targetId)) {
                                             broken = true;
                                         }
                                     }
