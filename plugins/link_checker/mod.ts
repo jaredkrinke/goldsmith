@@ -1,6 +1,5 @@
 import type { GoldsmithPlugin } from "../../mod.ts";
-// @deno-types="./deps/html_tokenizer.d.ts"
-import { Parser } from "./deps/html_tokenizer.js";
+import { Parser } from "https://deno.land/x/event_driven_html_parser@4.0.1/parser.ts";
 
 export interface BrokenLink {
     filePath: string;
