@@ -1,4 +1,4 @@
-import { GoldsmithPlugin } from "../../mod.ts";
+import type { GoldsmithPlugin } from "../../mod.ts";
 // @deno-types="./deps/html_tokenizer.d.ts"
 import { Parser } from "./deps/html_tokenizer.js";
 
