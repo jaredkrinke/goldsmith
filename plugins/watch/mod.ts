@@ -2,6 +2,7 @@ import { GoldsmithPlugin } from "../../mod.ts";
 
 export interface GoldsmithWatchOptions {
     directories?: string[];
+    abortSignal?: AbortSignal;
 }
 
 export function goldsmithWatch(options?: GoldsmithWatchOptions): GoldsmithPlugin {
@@ -38,6 +39,15 @@ export function goldsmithWatch(options?: GoldsmithWatchOptions): GoldsmithPlugin
                     setTimeout(rebuild, delay);
                 }
             })();
+
+            // Set up abort handler, if needed
+            const abortSignal = options?.abortSignal;
+            if (abortSignal) {
+                abortSignal.addEventListener("abort", () => {
+                    watcher.close();
+                });
+            }
+
             console.log(`Watch: monitoring: [${directories.join("; ")}]...`);
         }
     };
