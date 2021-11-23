@@ -250,8 +250,8 @@ export class GoldsmithObject {
     }
 
     /** Add an event listener to Goldsmith (currently, only the "built" event is supported). */
-    addEventListener(type: GoldsmithEventType, listener: (event: GoldsmithBuiltEvent) => void): void {
-        this.events.addEventListener(type, listener);
+    addEventListener(type: GoldsmithEventType, listener: (event: GoldsmithBuiltEvent) => void, options?: AddEventListenerOptions): void {
+        this.events.addEventListener(type, listener, options);
     }
 
     /** Remove an event listener from Goldsmith. */
