@@ -1,5 +1,5 @@
 import type { GoldsmithPlugin } from "../../mod.ts";
-import { Parser } from "https://deno.land/x/event_driven_html_parser@4.0.1/parser.ts";
+import { Parser } from "https://deno.land/x/event_driven_html_parser@4.0.2/parser.ts";
 
 export interface BrokenLink {
     filePath: string;
