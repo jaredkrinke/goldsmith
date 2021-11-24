@@ -2,6 +2,15 @@ import { GoldsmithPlugin } from "../../mod.ts";
 
 export type GoldsmithJSONMetadataOptions = string | { [property: string]: string };
 
+export class GoldsmithJSONMetadataError extends Error {
+    filePath: string;
+
+    constructor(filePath: string, inputDirectory: string) {
+        super(`Required file "${filePath}" was not found in input directory "${inputDirectory}"`);
+        this.filePath = filePath;
+    }
+}
+
 /** Goldsmith plugin for reading global metadata from one or more JSON files. */
 export function goldsmithJSONMetadata(stringOrOptions: GoldsmithJSONMetadataOptions): GoldsmithPlugin {
     const rows: { path: string, propertyName?: string }[] = [];
@@ -18,6 +27,10 @@ export function goldsmithJSONMetadata(stringOrOptions: GoldsmithJSONMetadataOpti
     return (files, goldsmith) => {
         for (const { path, propertyName } of rows) {
             const file = files[path];
+            if (!file) {
+                throw new GoldsmithJSONMetadataError(path, goldsmith.source());
+            }
+
             delete files[path];
             const parsedObject = JSON.parse(goldsmith.decodeUTF8(file.data));
             if (propertyName) {
