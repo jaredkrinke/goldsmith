@@ -51,7 +51,7 @@ export function goldsmithFeed(options: GoldsmithFeedOptions): GoldsmithPlugin {
         const m = goldsmith.metadata() as (GoldsmithMetadata & { site?: GoldsmithSiteMetadata });
         const siteURL = m.site?.url;
         const feedPathToRoot = pathToRoot(feedPath);
-        const prefix = (siteURL ? (siteURL.endsWith("/") ? siteURL : (siteURL + "/")) :feedPathToRoot);
+        const prefix = (siteURL ? (siteURL.endsWith("/") ? siteURL : (siteURL + "/")) : feedPathToRoot);
         for (const file of collection) {
             // Find path using linear search
             let pathFromRoot: string | undefined;
@@ -115,7 +115,7 @@ ${{verbatim: m.site?.url ? xml`<link rel="self" href="${prefix}${feedPath}"/>
 
 ${{verbatim: list.map(post => xml`<entry>
 <title>${post.title}}</title>
-<id>${{verbatim: m.site?.url ? xml`${m.site.url}${post.pathFromRoot}` : xml`urn:md2blog:${{param: m.site?.title ?? ""}}:${{param: post.title}}`}}</id>
+<id>${{verbatim: m.site?.url ? xml`${prefix}${post.pathFromRoot}` : xml`urn:md2blog:${{param: m.site?.title ?? ""}}:${{param: post.title}}`}}</id>
 <link rel="alternate" href="${prefix}${post.pathFromRoot}"/>
 <updated>${post.date.toISOString()}</updated>
 ${{verbatim: post.description ? xml`<summary type="text">${post.description}</summary>` : ""}}
