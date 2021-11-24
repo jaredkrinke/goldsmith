@@ -114,7 +114,7 @@ ${{verbatim: m.site?.url ? xml`<link rel="self" href="${prefix}${feedPath}"/>
 <updated>${(new Date()).toISOString()}</updated>
 
 ${{verbatim: list.map(post => xml`<entry>
-<title>${post.title}}</title>
+<title>${post.title}</title>
 <id>${{verbatim: m.site?.url ? xml`${prefix}${post.pathFromRoot}` : xml`urn:md2blog:${{param: m.site?.title ?? ""}}:${{param: post.title}}`}}</id>
 <link rel="alternate" href="${prefix}${post.pathFromRoot}"/>
 <updated>${post.date.toISOString()}</updated>
