@@ -38,6 +38,9 @@ export interface GoldsmithMetadata {
     /** Content of the file */
     data: Uint8Array;
 
+    /** Path to the original source file (relative to the input directory), if available */
+    originalFilePath?: string;
+
     [propertyName: string]: unknown;
 }
 
@@ -182,7 +185,10 @@ export class GoldsmithObject {
             await Promise.all(inputFilePaths.map(async (path) => {
                 // Note: path.relative requires access to current directory, so just use string manipulation here
                 const pathFromInputDirectory = path.slice(inputDirectory.length + 1);
-                files[pathFromInputDirectory] = { data: await Deno.readFile(path) };
+                files[pathFromInputDirectory] = {
+                    originalFilePath: pathFromInputDirectory,
+                    data: await Deno.readFile(path),
+                };
             }));
         }
 
