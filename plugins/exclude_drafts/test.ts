@@ -1,4 +1,4 @@
-import { assert } from "../../deps.test.ts";
+import { assert } from "../../test/deps.ts";
 import { Goldsmith } from "../../mod.ts";
 import { goldsmithExcludeDrafts } from "./mod.ts";
 

@@ -1,4 +1,4 @@
-import { assert, assertEquals } from "../../deps.test.ts";
+import { assert, assertEquals } from "../../test/deps.ts";
 import { Goldsmith } from "../../mod.ts";
 import { goldsmithRootPaths } from "./mod.ts";
 

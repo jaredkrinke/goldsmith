@@ -1,7 +1,7 @@
-import { assert, assertEquals, assertThrowsAsync } from "./deps.test.ts";
-import { Goldsmith, GoldsmithError } from "./mod.ts";
+import { assert, assertEquals, assertThrowsAsync } from "./deps.ts";
+import { Goldsmith, GoldsmithError } from "../mod.ts";
 
-declare module "./mod.ts" {
+declare module "../mod.ts" {
     interface GoldsmithMetadata {
         property?: string;
         nested?: {
@@ -79,7 +79,7 @@ Deno.test({
             await deleteIfNeededAsync(dir);
 
             await Goldsmith()
-                .source("testdata/subdirs")
+                .source("test/data/subdirs")
                 .destination(dir)
                 .build();
     
@@ -212,7 +212,7 @@ Deno.test({
             await deleteIfNeededAsync("out");
     
             await Goldsmith()
-                .source("testdata/encoding")
+                .source("test/data/encoding")
                 .destination("out")
                 .use((files, goldsmith) => {
                     for (const key of Object.keys(files)) {
@@ -253,7 +253,7 @@ Deno.test({
             await deleteIfNeededAsync(dir);
 
             await Goldsmith()
-                .source("testdata/subdirs")
+                .source("test/data/subdirs")
                 .destination(dir)
                 .use((_files, goldsmith) => {
                     goldsmith.addEventListener("built", () => {

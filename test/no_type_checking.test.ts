@@ -1,6 +1,6 @@
-import { assert, assertEquals } from "./deps.test.ts";
-import { Goldsmith } from "./mod.ts";
-import type {} from "./no_type_checking.ts";
+import { assert, assertEquals } from "./deps.ts";
+import { Goldsmith } from "../mod.ts";
+import type {} from "../no_type_checking.ts";
 
 Deno.test({
     name: "Type checking can be mostly skipped by importing no_type_checking.ts",

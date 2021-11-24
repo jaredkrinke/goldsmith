@@ -1,4 +1,4 @@
-import { assertEquals } from "../../deps.test.ts";
+import { assertEquals } from "../../test/deps.ts";
 import { Goldsmith, GoldsmithObject } from "../../mod.ts";
 import { goldsmithWatch } from "./mod.ts";
 
@@ -21,7 +21,7 @@ async function deleteIfNeededAsync(path: string): Promise<void> {
 Deno.test({
     name: "Rebuild should be triggered on file update",
     fn: async () => {
-        const inputDirectory = "testdata/watch";
+        const inputDirectory = "test/data/watch";
         const outputDirectory = "out";
         await deleteIfNeededAsync(inputDirectory);
         await createDirectoryIfNeededAsync(inputDirectory);

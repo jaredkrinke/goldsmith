@@ -1,8 +1,8 @@
-import { assert, assertThrowsAsync } from "../../deps.test.ts";
+import { assert, assertThrowsAsync } from "../../test/deps.ts";
 import { Goldsmith, GoldsmithFileCollection, GoldsmithObject } from "../../mod.ts";
 import { goldsmithLinkChecker, GoldsmithLinkCheckerError } from "./mod.ts";
 
-function addTestData(files: GoldsmithFileCollection, goldsmith: GoldsmithObject): void {
+function addtestdata(files: GoldsmithFileCollection, goldsmith: GoldsmithObject): void {
     // Link sources
     files["sources/body.html"] = { data: goldsmith.encodeUTF8(`<html><body><a href="../targets/page1.html">Page 1</a></body></html>`) };
     files["sources/bodyWithAnchor.html"] = { data: goldsmith.encodeUTF8(`<html><body><a href="../targets/page2.html#anchor">Page 2, with anchor</a></body></html>`) };
@@ -21,7 +21,7 @@ function addTestData(files: GoldsmithFileCollection, goldsmith: GoldsmithObject)
 function testWithBrokenLinkAsync(prepare: (files: GoldsmithFileCollection, goldsmith: GoldsmithObject) => void): Promise<GoldsmithFileCollection> {
     return Goldsmith()
         .use((files, goldsmith) => {
-            addTestData(files, goldsmith);
+            addtestdata(files, goldsmith);
             prepare(files, goldsmith);
         })
         .use(goldsmithLinkChecker())
@@ -33,7 +33,7 @@ Deno.test({
     fn: async () => {
         let pluginExecuted = false;
         await Goldsmith()
-            .use(addTestData)
+            .use(addtestdata)
             .use(goldsmithLinkChecker())
             .use((_files, _goldsmith) => {
                 pluginExecuted = true;
