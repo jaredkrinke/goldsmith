@@ -9,7 +9,7 @@ export interface GoldsmithFrontMatterOptions {
 /** Goldsmith plugin for parsing YAML front matter (fenced by `---`) and adding it to the containing file's metadata. */
 export function goldsmithFrontMatter(options?: GoldsmithFrontMatterOptions): GoldsmithPlugin {
     const pattern = options?.pattern ?? /\.md$/;
-    const frontMatterPattern = /^---\r?\n(.*?)\r?\n---\r?\n/ms;
+    const frontMatterPattern = /^---\r?\n(.*?)\r?\n---(\r?\n|$)/ms;
     return (files, goldsmith) => {
         for (const key of Object.keys(files)) {
             if (pattern.test(key)) {
@@ -18,7 +18,14 @@ export function goldsmithFrontMatter(options?: GoldsmithFrontMatterOptions): Gol
                 const matches = frontMatterPattern.exec(text);
                 if (matches) {
                     const yamlText = matches[1];
-                    const yaml = parseYAML(yamlText);
+                    let yaml: unknown;
+                    try {
+                        yaml = parseYAML(yamlText);
+                    } catch (e) {
+                        console.log(`Error parsing YAML front matter in "${key}"`);
+                        throw e;
+                    }
+
                     Object.assign(file, yaml);
 
                     const body = text.slice(matches[0].length);
