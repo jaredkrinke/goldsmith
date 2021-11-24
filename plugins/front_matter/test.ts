@@ -31,4 +31,4 @@ This is just normal Markdown content here.
     },
 });
 
-// TODO: Test other file types, custom patterns, other YAML array style, Unicode properties
+// TODO: Test other file types, custom patterns, other YAML array style, Unicode properties, dates with time of day
