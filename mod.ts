@@ -17,8 +17,8 @@ const { join, dirname } = posix;
  *}
  * ```
  * */
+// deno-lint-ignore no-empty-interface
 export interface GoldsmithMetadata {
-    [propertyName: string]: unknown;
 }
 
 /** A file that will be written out by Goldsmith.
@@ -40,8 +40,6 @@ export interface GoldsmithMetadata {
 
     /** Path to the original source file (relative to the input directory), if available */
     originalFilePath?: string;
-
-    [propertyName: string]: unknown;
 }
 
 /** A set of files, indexed by the file's path from the output root (note: always uses web-style forward slashes). */
@@ -121,7 +119,7 @@ export class GoldsmithObject {
     metadata(): GoldsmithMetadata;
     metadata(properties?: GoldsmithMetadata): GoldsmithObject | GoldsmithMetadata {
         if (properties) {
-            this.properties = deepMerge<Record<string, unknown>>(this.properties, properties);
+            this.properties = deepMerge<Record<string, unknown>>(this.properties as Record<string, unknown>, properties as Record<string, unknown>);
             return this;
         } else {
             return this.properties;

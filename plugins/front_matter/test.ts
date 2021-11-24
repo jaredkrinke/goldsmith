@@ -2,6 +2,14 @@ import { assert, assertEquals } from "../../deps.test.ts";
 import { Goldsmith } from "../../mod.ts";
 import { goldsmithFrontMatter } from "./mod.ts";
 
+declare module "../../mod.ts" {
+    interface GoldsmithFile {
+        title?: string;
+        date?: Date;
+        keywords?: string[];
+    }
+}
+
 Deno.test({
     name: "Title and keywords are read from YAML front matter on a Markdown file",
     fn: async () => {

@@ -3,7 +3,7 @@ import { Goldsmith } from "../../mod.ts";
 import { goldsmithRootPaths } from "./mod.ts";
 
 Deno.test({
-    name: "Paths to and from root at multiple levels should be correct",
+    name: "TODO Paths to and from root at multiple levels should be correct",
     fn: async () => {
         let pluginExecuted = false;
         await Goldsmith()

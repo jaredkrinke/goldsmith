@@ -3,7 +3,7 @@ import { Goldsmith } from "../../mod.ts";
 import { goldsmithCollections } from "./mod.ts";
 
 Deno.test({
-    name: "Collections are created based on pattern",
+    name: "TODO Collections are created based on pattern",
     fn: async () => {
         let pluginExecuted = false;
         await Goldsmith()

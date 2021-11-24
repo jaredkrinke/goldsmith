@@ -3,7 +3,7 @@ import { Goldsmith } from "../../mod.ts";
 import { goldsmithFeed } from "./mod.ts";
 
 Deno.test({
-    name: "Title and keywords are read from YAML front matter on a Markdown file",
+    name: "TODO Feed should have been generated",
     fn: async () => {
         let pluginExecuted = false;
         await Goldsmith()

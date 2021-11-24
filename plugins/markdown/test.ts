@@ -3,7 +3,7 @@ import { Goldsmith } from "../../mod.ts";
 import { goldsmithMarkdown } from "./mod.ts";
 
 Deno.test({
-    name: "Test Markdown translation",
+    name: "TODO Test Markdown translation",
     fn: async () => {
         let pluginExecuted = false;
         await Goldsmith()

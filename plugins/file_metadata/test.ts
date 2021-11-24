@@ -2,6 +2,12 @@ import { assert, assertEquals } from "../../deps.test.ts";
 import { Goldsmith } from "../../mod.ts";
 import { goldsmithFileMetadata } from "./mod.ts";
 
+declare module "../../mod.ts" {
+    interface GoldsmithFile {
+        category?: string;
+    }
+}
+
 Deno.test({
     name: "Drafts directory example",
     fn: async () => {

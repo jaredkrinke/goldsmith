@@ -38,7 +38,7 @@ export function goldsmithIndex(options: GoldsmithIndexOptions): GoldsmithPlugin 
         for (const key of Object.keys(files)) {
             if (pattern.test(key)) {
                 const file = files[key];
-                const termOrTerms = file[propertyName];
+                const termOrTerms = (file as unknown as Record<string, unknown>)[propertyName];
                 const terms = Array.isArray(termOrTerms) ? termOrTerms : [termOrTerms];
                 for (const term of terms) {
                     const list = index[term] ?? [];

@@ -7,6 +7,18 @@ const testMetadata = {
     description: "A truly awesome site",
 };
 
+declare module "../../mod.ts" {
+    interface GoldsmithMetadata {
+        site?: {
+            title: string;
+            description: string;
+        }
+        other?: {
+            test2: string;
+        }
+    }
+}
+
 Deno.test({
     name: "Properties are read from JSON and applied to a property of global metadata",
     fn: async () => {

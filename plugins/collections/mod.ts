@@ -34,8 +34,8 @@ export function goldsmithCollections(collectionMap: { [collectionName: string]: 
             }
     
             list.sort((a, b) => {
-                const sa = a[sortBy] as SortableType;
-                const sb = b[sortBy] as SortableType;
+                const sa = (a as unknown as Record<string, unknown>)[sortBy] as SortableType;
+                const sb = (b as unknown as Record<string, unknown>)[sortBy] as SortableType;
 
                 return (sa < sb) ? -1 : ((sa > sb) ? 1 : 0);
             });

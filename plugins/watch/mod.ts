@@ -1,5 +1,11 @@
 import { GoldsmithPlugin } from "../../mod.ts";
 
+declare module "../../mod.ts" {
+    interface GoldsmithMetadata {
+        __goldsmithWatchInitialized?: boolean;
+    }
+}
+
 export interface GoldsmithWatchOptions {
     directories?: string[];
     abortSignal?: AbortSignal;

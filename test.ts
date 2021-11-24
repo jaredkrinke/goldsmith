@@ -1,6 +1,22 @@
 import { assert, assertEquals, assertThrowsAsync } from "./deps.test.ts";
 import { Goldsmith, GoldsmithError } from "./mod.ts";
 
+declare module "./mod.ts" {
+    interface GoldsmithMetadata {
+        property?: string;
+        nested?: {
+            property: string;
+        }
+    }
+
+    interface GoldsmithFile {
+        property?: string;
+        nested?: {
+            property: string;
+        }
+    }
+}
+
 async function createDirectoryIfNeededAsync(path: string): Promise<void> {
     try {
         await Deno.mkdir(path);

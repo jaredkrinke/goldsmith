@@ -3,7 +3,7 @@ import { Goldsmith } from "../../mod.ts";
 import { goldsmithLayout } from "./mod.ts";
 
 Deno.test({
-    name: "Layout callbacks are called based on layout property",
+    name: "TODO Layout callbacks are called based on layout property",
     fn: async () => {
         let pluginExecuted = false;
         await Goldsmith()
