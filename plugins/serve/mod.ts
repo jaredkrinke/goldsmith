@@ -1,5 +1,11 @@
 import { GoldsmithPlugin } from "../../mod.ts";
 
+declare module "../../mod.ts" {
+    interface GoldsmithMetadata {
+        __goldsmithServeInitialized?: boolean;
+    }
+}
+
 export interface GoldsmithServeOptions {
     hostName?: string;
     port?: number;
