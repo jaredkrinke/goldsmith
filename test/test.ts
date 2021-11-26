@@ -91,6 +91,111 @@ Deno.test({
 });
 
 Deno.test({
+    name: "File filtering ignores files starting with a dot by default",
+    fn: async () => {
+        const dir = "out";
+        try {
+            await deleteIfNeededAsync(dir);
+
+            await Goldsmith()
+                .source("test/data/filtering")
+                .use((_files, goldsmith) => {
+                    // Filtering function test
+                    assertEquals(goldsmith.filter("normal.txt"), true, "Normal file should be included.");
+                    assertEquals(goldsmith.filter("also-normal.txt"), true, "Also normal file should be included.");
+                    assertEquals(goldsmith.filter(".dot.txt"), false, "Dot file should be excluded.");
+                    assertEquals(goldsmith.filter("sub/.sub.txt"), false, "Dot file in subdirectory should be excluded.");
+                    assertEquals(goldsmith.filter("sub/.sub2.txt"), false, "Dot file in subdirectory 2 should be excluded.");
+                })
+                .destination(dir)
+                .clean(true)
+                .build();
+
+            // Also test output
+            assert(await fileExistsAsync("out/normal.txt"), "Normal file should have been copied.");
+            assert(await fileExistsAsync("out/also-normal.txt"), "Normal file should have been copied.");
+            assertEquals(await fileExistsAsync("out/.dot.txt"), false, "Dot file should have been ignored.");
+        } finally {
+            await deleteIfNeededAsync(dir);
+        }
+    },
+});
+
+Deno.test({
+    name: "File filtering can allow including files staring with a dot",
+    fn: async () => {
+        const dir = "out";
+        try {
+            await deleteIfNeededAsync(dir);
+
+            await Goldsmith()
+                .source("test/data/filtering")
+                .filter({
+                    exclude: false,
+                })
+                .use((_files, goldsmith) => {
+                    // Filtering function test
+                    assertEquals(goldsmith.filter("normal.txt"), true, "Normal file should be included.");
+                    assertEquals(goldsmith.filter("also-normal.txt"), true, "Normal file should be included.");
+                    assertEquals(goldsmith.filter(".dot.txt"), true, "Dot file should be included.");
+                    assertEquals(goldsmith.filter("sub/.sub.txt"), true, "Dot file should be included.");
+                    assertEquals(goldsmith.filter("sub/.sub2.txt"), true, "Dot file should be included.");
+                })
+                .destination(dir)
+                .clean(true)
+                .build();
+
+            // Also test output
+            assert(await fileExistsAsync("out/normal.txt"), "Normal file should have been copied.");
+            assert(await fileExistsAsync("out/also-normal.txt"), "Normal file should have been copied.");
+            assertEquals(await fileExistsAsync("out/.dot.txt"), true, "Dot file should have been copied.");
+        } finally {
+            await deleteIfNeededAsync(dir);
+        }
+    },
+});
+
+Deno.test({
+    name: "File filtering rules can be overwritten and reversed",
+    fn: async () => {
+        const dir = "out";
+        try {
+            await deleteIfNeededAsync(dir);
+
+            await Goldsmith()
+                .source("test/data/filtering")
+                .filter({
+                    include: true,
+                    exclude: false,
+                })
+                .filter({
+                    include: /(^|\/)\.[^/]*$/,
+                    exclude: /(^|\/).sub2[^/]*$/,
+                })
+                .use((_files, goldsmith) => {
+                    // Filtering function test
+                    assertEquals(goldsmith.filter("normal.txt"), false, "Normal file should be excluded.");
+                    assertEquals(goldsmith.filter("also-normal.txt"), false, "Normal file should be excluded.");
+                    assertEquals(goldsmith.filter(".dot.txt"), true, "Dot file should be included.");
+                    assertEquals(goldsmith.filter("sub/.sub.txt"), true, "Dot file should be included.");
+                    assertEquals(goldsmith.filter("sub/.sub2.txt"), false, "sub2 dot file should be excluded.");
+                })
+                .destination(dir)
+                .clean(true)
+                .build();
+
+            // Also test output
+            assertEquals(await fileExistsAsync("out/normal.txt"), false, "Normal file should not have been copied.");
+            assertEquals(await fileExistsAsync("out/also-normal.txt"), false, "Normal file should not have been copied.");
+            assertEquals(await fileExistsAsync("out/.dot.txt"), true, "Dot file should have been copied.");
+            assertEquals(await fileExistsAsync("out/sub/.sub.txt"), true, "Dot file should have been copied.");
+            assertEquals(await fileExistsAsync("out/sub/.sub2.txt"), false, "Dot file should not have been copied.");
+        } finally {
+            await deleteIfNeededAsync(dir);
+        }
+    },
+});
+Deno.test({
     name: "Output outside root should fail",
     fn: async () => {
         const dir = "out";

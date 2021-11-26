@@ -85,11 +85,32 @@ export class GoldsmithError extends Error {
     }
 }
 
+/** Options for filtering input files from the source directory. */
+export interface GoldsmithFilterOptions {
+    /** Only process file paths from the source directory matching this pattern. Set to `true` to include all paths.
+     * 
+     * Note that the sibling `exclude` pattern takes precedence.
+     * 
+     * Default: `true` (no input filtering). */
+    include?: RegExp | true;
+
+    /** Ignore file paths from the source directory matching this pattern. Set to `false` to not exclude any paths.
+     * 
+     * Not that this takes precedence over the sibling `include` pattern.
+     * 
+     * Default: `/(^|\/)\.[^/]*$/` (ignore file names starting with "."). */
+    exclude?: RegExp | false;
+}
+
+const dotFilePattern = /(^|\/)\.[^/]*$/;
+
 /** Goldsmith's fluent API for generating a static site, given an input directory, and a chain of plugins. */
 export class GoldsmithObject {
     properties: GoldsmithMetadata = {};
     cleanOutputDirectory = false;
     inputDirectory?: string;
+    filterInclude?: RegExp;
+    filterExclude?: RegExp = dotFilePattern;
     outputDirectory?: string;
     plugins: GoldsmithPlugin[] = [];
     events: EventTarget = new EventTarget();
@@ -142,6 +163,35 @@ export class GoldsmithObject {
         }
     }
 
+    /** Tests or sets filtering for input files.
+     * 
+     * Pass in a file's path as a string to test whether or not the file should be included.
+     * 
+     * Pass in a GoldsmithFilterOptions object to set (or overwrite). The `exclude` pattern overrides the `include` pattern. The default is to only exclude files starting with ".".
+     */
+    filter(filePath: string): boolean
+    filter(options: GoldsmithFilterOptions): GoldsmithObject
+    filter(filePathOrOptions: string | GoldsmithFilterOptions): boolean | GoldsmithObject {
+        if (typeof(filePathOrOptions) === "string") {
+            const filePath = filePathOrOptions;
+            let include = this.filterInclude ? this.filterInclude.test(filePath) : true;
+            if (include && this.filterExclude) {
+                include = !(this.filterExclude.test(filePath));
+            }
+            return include;
+        } else {
+            const options = filePathOrOptions;
+            if (options.include !== undefined) {
+                this.filterInclude = (options.include === true) ? undefined : options.include;
+            }
+            
+            if (options.exclude !== undefined) {
+                this.filterExclude = (options.exclude === false) ? undefined : options.exclude;
+            }
+            return this;
+        }
+    }
+
     /** Get or set the output directory for Goldsmith.
      * 
      * `source()` returns the current output directory
@@ -180,7 +230,9 @@ export class GoldsmithObject {
         if (this.inputDirectory) {
             const inputDirectory = this.inputDirectory;
             const inputFilePaths = await enumerateFiles(inputDirectory);
-            await Promise.all(inputFilePaths.map(async (path) => {
+            await Promise.all(inputFilePaths
+                .filter(path => this.filter(path))
+                .map(async (path) => {
                 // Note: path.relative requires access to current directory, so just use string manipulation here
                 const pathFromInputDirectory = path.slice(inputDirectory.length + 1);
                 files[pathFromInputDirectory] = {
