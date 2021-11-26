@@ -40,9 +40,17 @@ export function goldsmithWatch(options?: GoldsmithWatchOptions): GoldsmithPlugin
             const watcher = Deno.watchFs(directories, { recursive: true });
             (async () => {
                 for await (const event of watcher) {
-                    console.log(`  Watch: ${event.kind} for [${event.paths.join("; ")}]`);
-                    ++outstanding;
-                    setTimeout(rebuild, delay);
+                    // Respect filtering rules for paths
+                    for (const absolutePath of event.paths) {
+                        // Normalize path, but make no attempt to remove prefix (because there could be multiple possible directory prefixes)
+                        const path = absolutePath.replace(/\\/g, "/");
+                        if (goldsmith.filter(path)) {
+                            console.log(`  Watch: ${event.kind} for [${event.paths.join("; ")}]`);
+                            ++outstanding;
+                            setTimeout(rebuild, delay);
+                            break;
+                        }
+                    }
                 }
             })();
 

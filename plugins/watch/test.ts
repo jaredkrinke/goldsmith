@@ -18,8 +18,43 @@ async function deleteIfNeededAsync(path: string): Promise<void> {
     }
 }
 
+interface RebuildTest {
+    shouldRebuild: boolean;
+    prepare: () => Promise<void>;
+    verify: () => Promise<void>;
+}
+
+async function runRebuildTestsAsync(goldsmith: GoldsmithObject, tests: RebuildTest[]) {
+    for (const test of tests) {
+        const waitForEventAsync = () => new Promise<void>((resolve, reject) => {
+            const tid = setTimeout(() => {
+                goldsmith.removeEventListener("built", buildHandler);
+                if (test.shouldRebuild) {
+                    reject("Timed out waiting for build event!");
+                } else {
+                    resolve();
+                }
+            }, test.shouldRebuild ? 5000 : 500); // Shorter timeout when expecting nothing to happen
+            const buildHandler = () => {
+                clearTimeout(tid);
+                if (test.shouldRebuild) {
+                    resolve();
+                } else {
+                    reject("Received unexpected build event!");
+                }
+            }
+            goldsmith.addEventListener("built", buildHandler, { once: true });
+        });
+
+        const eventPromise = waitForEventAsync();
+        await test.prepare();
+        await eventPromise;
+        await test.verify();
+    }
+}
+
 Deno.test({
-    name: "Rebuild should be triggered on file update",
+    name: "Rebuild should be triggered on included file update",
     fn: async () => {
         const inputDirectory = "test/data/watch";
         const outputDirectory = "out";
@@ -28,6 +63,7 @@ Deno.test({
         try {
             // Populate input directory
             const test1Path = `${inputDirectory}/test1.txt`;
+            const testDotFilePath = `${inputDirectory}/.test1.txt`;
             await Deno.writeTextFile(test1Path, "Hello");
 
             // Build and start watching
@@ -50,24 +86,36 @@ Deno.test({
             assertEquals(pluginExecutionCount, 1, "Verification plugin should have run once");
             assertEquals(await Deno.readTextFile(test1Path), "Hello");
 
-            // Setup timeout and build event handler
-            const timerId = setTimeout(() => abortController.abort(), 5000);
-            const waitForBuildAsync = () => new Promise<void>((resolve, reject) => {
-                const timeoutHandler = () => reject("Timed out waiting for build event!");
-                go!.addEventListener("built", () => {
-                    abortController.signal.removeEventListener("abort", timeoutHandler);
-                    resolve();
-                }, { once: true });
-                abortController.signal.addEventListener("abort", timeoutHandler, { once: true });
-            });
-
-            await Deno.writeTextFile(test1Path, "Again");
-            await waitForBuildAsync();
-            assertEquals(await Deno.readTextFile(test1Path), "Again");
-            assertEquals(pluginExecutionCount, 2, "Verification plugin should have run again");
-
-            abortController.abort();
-            clearTimeout(timerId);
+            try {
+                await runRebuildTestsAsync(go!, [
+                    {
+                        shouldRebuild: true,
+                        prepare: async () => { await Deno.writeTextFile(test1Path, "Again") },
+                        verify: async () => {
+                            assertEquals(await Deno.readTextFile(test1Path), "Again");
+                            assertEquals(pluginExecutionCount, 2, "Verification plugin should have run again");
+                        }
+                    },
+                    {
+                        shouldRebuild: false,
+                        prepare: async () => { await Deno.writeTextFile(testDotFilePath, "Oops") },
+                        verify: async () => {
+                            assertEquals(await Deno.readTextFile(test1Path), "Again");
+                            assertEquals(pluginExecutionCount, 2, "Verification plugin should NOT have run again");
+                        }
+                    },
+                    {
+                        shouldRebuild: true,
+                        prepare: async () => { await Deno.writeTextFile(test1Path, "And again") },
+                        verify: async () => {
+                            assertEquals(await Deno.readTextFile(test1Path), "And again");
+                            assertEquals(pluginExecutionCount, 3, "Verification plugin should have run again");
+                        }
+                    },
+                ]);
+            } finally {
+                abortController.abort();
+            }
         } finally {
             await deleteIfNeededAsync(inputDirectory);
             await deleteIfNeededAsync(outputDirectory);
