@@ -1,5 +1,5 @@
 import { GoldsmithPlugin } from "../../mod.ts";
-import { parse as parseYAML } from "https://deno.land/std@0.113.0/encoding/_yaml/parse.ts";
+import { parse as parseYAML } from "https://deno.land/std@0.115.1/encoding/_yaml/parse.ts";
 
 export interface GoldsmithFrontMatterOptions {
     /** Only files matching this RegExp will be inspected for YAML front matter (default: `/\.md$/`). */

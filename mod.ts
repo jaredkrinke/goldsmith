@@ -1,5 +1,5 @@
-import { posix } from "https://deno.land/std@0.113.0/path/mod.ts";
-import { deepMerge } from "https://deno.land/std@0.113.0/collections/deep_merge.ts";
+import { posix } from "https://deno.land/std@0.115.1/path/mod.ts";
+import { deepMerge } from "https://deno.land/std@0.115.1/collections/deep_merge.ts";
 
 // Normalize to POSIX/web (forward) slashes
 const { join, dirname } = posix;
