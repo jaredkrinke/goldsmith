@@ -1,6 +1,10 @@
 import { GoldsmithPlugin } from "../../mod.ts";
 
-export type GoldsmithJSONMetadataOptions = string | { [property: string]: string };
+export type GoldsmithJSONMetadataMap = string | { [property: string]: string };
+
+export interface GoldsmithJSONMetadataOptions {
+    merge?: boolean;
+}
 
 export class GoldsmithJSONMetadataError extends Error {
     filePath: string;
@@ -12,15 +16,15 @@ export class GoldsmithJSONMetadataError extends Error {
 }
 
 /** Goldsmith plugin for reading global metadata from one or more JSON files. */
-export function goldsmithJSONMetadata(stringOrOptions: GoldsmithJSONMetadataOptions): GoldsmithPlugin {
+export function goldsmithJSONMetadata(stringOrMap: GoldsmithJSONMetadataMap, options?: GoldsmithJSONMetadataOptions): GoldsmithPlugin {
     const rows: { path: string, propertyName?: string }[] = [];
-    if (typeof(stringOrOptions) === "string") {
-        rows.push({ path: stringOrOptions });
+    if (typeof(stringOrMap) === "string") {
+        rows.push({ path: stringOrMap });
     } else {
-        const options = stringOrOptions;
-        rows.push(...Object.keys(options).map(key => ({
+        const map = stringOrMap;
+        rows.push(...Object.keys(map).map(key => ({
             path: key,
-            propertyName: options[key],
+            propertyName: map[key],
         })));
     }
 
@@ -33,10 +37,11 @@ export function goldsmithJSONMetadata(stringOrOptions: GoldsmithJSONMetadataOpti
 
             delete files[path];
             const parsedObject = JSON.parse(goldsmith.decodeUTF8(file.data));
+            const metadataOptions = { merge: options?.merge };
             if (propertyName) {
-                goldsmith.metadata({ [propertyName]: parsedObject});
+                goldsmith.metadata({ [propertyName]: parsedObject}, metadataOptions);
             } else {
-                goldsmith.metadata(parsedObject);
+                goldsmith.metadata(parsedObject, metadataOptions);
             }
         }
     };

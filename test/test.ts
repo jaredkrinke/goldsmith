@@ -6,6 +6,7 @@ declare module "../mod.ts" {
         property?: string;
         nested?: {
             property: string;
+            property2?: string;
         }
     }
 
@@ -283,6 +284,67 @@ Deno.test({
         assertEquals(pluginExecuted, true, "Plugin should have run");
     },
 });
+
+Deno.test({
+    name: "Global metadata properties should be overwritten by default",
+    fn: async () => {
+        let pluginExecuted = false;
+        await Goldsmith()
+            .metadata({
+                nested: {
+                    property: "Prop-1",
+                    property2: "Prop2-1",
+                },
+            })
+            .metadata({
+                nested: {
+                    property: "Prop-2",
+                },
+            })
+            .use((_files, goldsmith) => {
+                const metadata = goldsmith.metadata();
+                assertEquals(metadata.nested, {
+                    property: "Prop-2",
+                });
+                pluginExecuted = true;
+            })
+            .run();
+        
+        assertEquals(pluginExecuted, true, "Plugin should have run");
+    },
+});
+
+Deno.test({
+    name: "Global metadata can be merged instead",
+    fn: async () => {
+        let pluginExecuted = false;
+        await Goldsmith()
+            .metadata({
+                nested: {
+                    property: "Prop-1",
+                    property2: "Prop2-1",
+                },
+            })
+            .metadata({
+                nested: {
+                    property: "Prop-2",
+                },
+            }, { merge: true })
+            .use((_files, goldsmith) => {
+                const metadata = goldsmith.metadata();
+                assertEquals(metadata.nested, {
+                    property: "Prop-2",
+                    property2: "Prop2-1",
+                });
+                pluginExecuted = true;
+            })
+            .run();
+        
+        assertEquals(pluginExecuted, true, "Plugin should have run");
+    },
+});
+
+// TODO: Test metadata replacement
 
 Deno.test({
     name: "File metadata set in one plugin should be visible to later plugins",

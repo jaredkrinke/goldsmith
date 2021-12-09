@@ -11,7 +11,7 @@ declare module "../../mod.ts" {
     interface GoldsmithMetadata {
         site?: {
             title: string;
-            description: string;
+            description?: string;
         }
         other?: {
             test2: string;
@@ -94,6 +94,60 @@ Deno.test({
             .use((_files, goldsmith) => {
                 assertEquals(goldsmith.metadata().site, testMetadata);
                 assertEquals(goldsmith.metadata().other, testMetadata2);
+                pluginExecuted = true;
+            })
+            .run();
+    
+        assert(pluginExecuted, "Verification plugin should have run");
+    },
+});
+
+Deno.test({
+    name: "Properties are overwritten by default from multiple JSON files",
+    fn: async () => {
+        const testMetadata2 = {
+            title: "Override!",
+        };
+
+        let pluginExecuted = false;
+        await Goldsmith()
+            .use((files, goldsmith) => {
+                files["site.json"] = { data: goldsmith.encodeUTF8(JSON.stringify(testMetadata))};
+                files["other/site.json"] = { data: goldsmith.encodeUTF8(JSON.stringify(testMetadata2))};
+            })
+            .use(goldsmithJSONMetadata({
+                "site.json": "site",
+                "other/site.json": "site",
+            }))
+            .use((_files, goldsmith) => {
+                assertEquals(goldsmith.metadata().site, testMetadata2);
+                pluginExecuted = true;
+            })
+            .run();
+    
+        assert(pluginExecuted, "Verification plugin should have run");
+    },
+});
+
+Deno.test({
+    name: "Properties can be merged by subsequent JSON files",
+    fn: async () => {
+        const testMetadata2 = {
+            description: "Override!",
+        };
+
+        let pluginExecuted = false;
+        await Goldsmith()
+            .use((files, goldsmith) => {
+                files["site.json"] = { data: goldsmith.encodeUTF8(JSON.stringify(testMetadata))};
+                files["other/site.json"] = { data: goldsmith.encodeUTF8(JSON.stringify(testMetadata2))};
+            })
+            .use(goldsmithJSONMetadata({
+                "site.json": "site",
+                "other/site.json": "site",
+            }, { merge: true }))
+            .use((_files, goldsmith) => {
+                assertEquals(goldsmith.metadata().site, { ...testMetadata, ...testMetadata2 });
                 pluginExecuted = true;
             })
             .run();

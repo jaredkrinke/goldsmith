@@ -1,5 +1,4 @@
 import { posix } from "https://deno.land/std@0.115.1/path/mod.ts";
-import { deepMerge } from "https://deno.land/std@0.115.1/collections/deep_merge.ts";
 
 // Normalize to POSIX/web (forward) slashes
 const { join, dirname } = posix;
@@ -69,6 +68,19 @@ async function enumerateFiles(directoryName: string): Promise<string[]> {
     return filePaths;
 }
 
+function mergeInto(target: Record<string, unknown>, source: Record<string, unknown>): void {
+    for (const [key, value] of Object.entries(source)) {
+        if (value && typeof(value) === "object") {
+            const targetValue = target[key];
+            if (targetValue && typeof(targetValue) === "object") {
+                mergeInto(targetValue as Record<string, unknown>, value as Record<string, unknown>);
+                return;
+            }
+        }
+        target[key] = value;
+    }
+}
+
 /** Goldsmith event that is fired when `build()` completes. */
 export type GoldsmithEventType = "built";
 
@@ -77,12 +89,18 @@ export class GoldsmithBuiltEvent extends Event {
     constructor() { super("built"); }
 }
 
-/** Goldsmith-specific error class */
+/** Goldsmith-specific error class. */
 export class GoldsmithError extends Error {
     constructor(message: string) {
         super(message);
         this.name = "GoldsmithError";
     }
+}
+
+/** Goldsmith metadata update options .*/
+export interface GoldsmithMetadataUpdateOptions {
+    /** True if properties that are objects should be merged (the default is to replace properties). */
+    merge?: boolean;
 }
 
 /** Options for filtering input files from the source directory. */
@@ -129,18 +147,20 @@ export class GoldsmithObject {
 
     /** Get or merge metadata into Goldsmith's global metadata.
      * 
-     * Note: when merging in new metadata, this will *not* replace existing objects, maps, sets, or arrays (it will
-     * merge/combine them). The `deepMerge` function from Deno's standard library is used, with the default "merge"
-     * strategy.
+     * By default, this will overwrite properties. If the `merge` option is truthy, objects will be recursively merged.
      * 
      * `metadata()` returns the current global metadata
-     * `metadata({ key: value, ... }) merges properties into global metadata (and return GoldsmithObject for chaining)
+     * `metadata({ key: value, ... }) replaces (or merges, if specified) properties in global metadata (and return GoldsmithObject for chaining)
      */
-    metadata(properties: GoldsmithMetadata): GoldsmithObject;
+    metadata(properties: GoldsmithMetadata, options?: GoldsmithMetadataUpdateOptions): GoldsmithObject;
     metadata(): GoldsmithMetadata;
-    metadata(properties?: GoldsmithMetadata): GoldsmithObject | GoldsmithMetadata {
+    metadata(properties?: GoldsmithMetadata, options?: GoldsmithMetadataUpdateOptions): GoldsmithObject | GoldsmithMetadata {
         if (properties) {
-            this.properties = deepMerge<Record<string, unknown>>(this.properties as Record<string, unknown>, properties as Record<string, unknown>);
+            if (options?.merge) {
+                mergeInto(this.properties as Record<string, unknown>, properties as Record<string, unknown>);
+            } else {
+                Object.assign(this.properties, properties);
+            }
             return this;
         } else {
             return this.properties;
