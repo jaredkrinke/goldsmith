@@ -81,7 +81,15 @@ export function goldsmithServe(options?: GoldsmithServeOptions): GoldsmithPlugin
                                         console.log(`  Serve: ${re.request.method} ${url.pathname} => ${path}${insertedAutomaticReloadingScript ? " (with auto-reload)" : ""}`);
                                     }
                                 } catch (_e) {
-                                    await re.respondWith(new Response("", { status: 404 }));
+                                    try {
+                                        // Serve 404.html, if it exists
+                                        const content = await Deno.readTextFile(webRoot + "/404.html");
+                                        await re.respondWith(new Response(content, { status: 404, headers: { "content-type": "text/html" } }));
+                                    } catch (_e2) {
+                                        // Otherwise serve a 404 with no content
+                                        await re.respondWith(new Response("", { status: 404 }));
+                                    }
+
                                     console.log(`  Serve: ${re.request.method} ${url.pathname} => (not found)`);
                                 }
                             }
