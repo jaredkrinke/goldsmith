@@ -140,7 +140,7 @@ export class GoldsmithObject {
         return this.textEncoder.encode(str);
     }
 
-    /** UTF-8 wrapper for TextEncoder.decode(), provided for convenience. */
+    /** UTF-8 wrapper for TextDecoder.decode(), provided for convenience. */
     decodeUTF8(bytes: Uint8Array): string {
         return this.textDecoder.decode(bytes);
     }
