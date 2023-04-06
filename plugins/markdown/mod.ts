@@ -11,8 +11,12 @@ const markdownPattern = /(.+)\.md$/;
 export function goldsmithMarkdown(options?: goldsmithMarkdownOptions): GoldsmithPlugin {
     const replaceLinks = options?.replaceLinks;
     const highlight = options?.highlight;
-    return (files, goldsmith) => {
-        marked.setOptions(marked.getDefaults());
+    return function markdown (files, goldsmith) {
+        marked.setOptions({
+            ...marked.getDefaults(),
+            mangle: false, // Prefer consistent output over dubious privacy features
+        });
+
         if (replaceLinks) {
             const renderer = new Renderer();
             const base = renderer.link;
