@@ -3,6 +3,8 @@ import { posix } from "https://deno.land/std@0.115.1/path/mod.ts";
 // Normalize to POSIX/web (forward) slashes
 const { join, dirname } = posix;
 
+const platformDefaultLineEnding = (Deno.build.os === "windows") ? "\r\n" : "\n";
+
 /** Goldsmith's global metadata.
  * 
  * Plugins that add properties that are known at compile time should extend this definition to add all properties (as
@@ -120,10 +122,15 @@ export interface GoldsmithFilterOptions {
     exclude?: RegExp | false;
 }
 
+export interface GoldsmithOptions {
+    lineEndings?: "auto" | "lf";
+}
+
 const dotFilePattern = /(^|\/)\.[^/]*$/;
 
 /** Goldsmith's fluent API for generating a static site, given an input directory, and a chain of plugins. */
 export class GoldsmithObject {
+    options: GoldsmithOptions;
     properties: GoldsmithMetadata = {};
     cleanOutputDirectory = false;
     inputDirectory?: string;
@@ -135,14 +142,27 @@ export class GoldsmithObject {
     textEncoder = new TextEncoder();
     textDecoder = new TextDecoder();
 
+    constructor(options?: GoldsmithOptions) {
+        this.options = options ?? {};
+    }
+
     /** UTF-8 wrapper for TextEncoder.encode(), provided for convenience. */
     encodeUTF8(str: string): Uint8Array {
+        if (this.options.lineEndings === "auto" && platformDefaultLineEnding !== "\n") {
+            str = str.replaceAll("\n", platformDefaultLineEnding);
+        }
+
         return this.textEncoder.encode(str);
     }
 
     /** UTF-8 wrapper for TextDecoder.decode(), provided for convenience. */
     decodeUTF8(bytes: Uint8Array): string {
-        return this.textDecoder.decode(bytes);
+        let str = this.textDecoder.decode(bytes);
+        if (this.options.lineEndings === "auto" && platformDefaultLineEnding !== "\n") {
+            str = str.replaceAll(platformDefaultLineEnding, "\n");
+        }
+
+        return str;
     }
 
     /** Get or merge metadata into Goldsmith's global metadata.
@@ -337,4 +357,4 @@ export class GoldsmithObject {
 }
 
 /** Initialize Goldsmith and return GoldsmithObject for using its fluent/chain-based API. */
-export const Goldsmith = () => new GoldsmithObject();
+export const Goldsmith = (options?: GoldsmithOptions) => new GoldsmithObject(options);
