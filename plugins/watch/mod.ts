@@ -9,6 +9,7 @@ declare module "../../mod.ts" {
 export interface GoldsmithWatchOptions {
     directories?: string[];
     abortSignal?: AbortSignal;
+    onRebuildCompleted?: () => void;
 }
 
 export function goldsmithWatch(options?: GoldsmithWatchOptions): GoldsmithPlugin {
@@ -27,7 +28,10 @@ export function goldsmithWatch(options?: GoldsmithWatchOptions): GoldsmithPlugin
                     console.log(`Watch: rebuilding...`);
                     (async () => {
                         try {
+                            const startTime = new Date();
                             await goldsmith.build();
+                            console.log(`Watch: rebuild complete (${(new Date()).valueOf() - startTime.valueOf()} ms).`);
+                            options?.onRebuildCompleted?.();
                         } catch (e) {
                             console.log(`Watch: rebuild error: ${e}`);
                         }

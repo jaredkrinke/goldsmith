@@ -1,6 +1,13 @@
 import type { GoldsmithPlugin } from "../../mod.ts";
 import { Parser } from "https://deno.land/x/event_driven_html_parser@4.0.2/parser.ts";
 
+const defaultBackgroundProcessingDelayMS = 500;
+
+export interface GoldsmithLinkCheckerOptions {
+    background?: boolean;
+    delay?: number;
+}
+
 export interface BrokenLink {
     filePath: string;
     href: string;
@@ -44,9 +51,11 @@ function pathRelativeResolve(from: string, to: string): string {
 }
 
 const relativeLinkPattern = /^[^/][^:]*$/;
-export function goldsmithLinkChecker(): GoldsmithPlugin {
+export function goldsmithLinkChecker(options?: GoldsmithLinkCheckerOptions): GoldsmithPlugin {
+    const background = options?.background ?? (options?.delay !== undefined);
+    const delay = options?.delay ?? defaultBackgroundProcessingDelayMS;
     const pattern = /^.+\.html$/; // TODO: Make customizable?
-    return (files, goldsmith) => {
+    const plugin = (files, goldsmith) => {
         // Create a map of files to ids
         const fileToIds: { [filePath: string]: Set<string> } = {};
         for (const [filePath, file] of Object.entries(files)) {
@@ -132,4 +141,18 @@ export function goldsmithLinkChecker(): GoldsmithPlugin {
             throw new GoldsmithLinkCheckerError(brokenLinks);
         }
     };
+
+    if (background) {
+        return (files, goldsmith) => {
+            setTimeout(() => {
+                try {
+                    plugin(files, goldsmith);
+                } catch (error) {
+                    console.error(`Error: ${error.message}`);
+                }
+            }, delay);
+        };
+    } else {
+        return plugin;
+    }
 }
