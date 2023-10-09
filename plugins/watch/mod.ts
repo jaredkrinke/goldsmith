@@ -10,6 +10,7 @@ export interface GoldsmithWatchOptions {
     directories?: string[];
     abortSignal?: AbortSignal;
     onRebuildCompleted?: () => void;
+    delayMS?: number;
 }
 
 export function goldsmithWatch(options?: GoldsmithWatchOptions): GoldsmithPlugin {
@@ -19,7 +20,7 @@ export function goldsmithWatch(options?: GoldsmithWatchOptions): GoldsmithPlugin
             goldsmith.metadata().__goldsmithWatchInitialized = true;
 
             // Delay (in milliseconds) for coalescing file system-triggered rebuilds
-            const delay = 200;
+            const delay = options?.delayMS ?? 200;
     
             // Only honor the final callback (i.e. the last outstanding one)
             let outstanding = 0;
