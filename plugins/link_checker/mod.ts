@@ -94,7 +94,7 @@ export function goldsmithLinkChecker(options?: GoldsmithLinkCheckerOptions): Gol
                             const attributeName = tagToLinkAttribute[token.name];
                             if (attributeName) {
                                 const href = token.attributes[attributeName];
-                                if (relativeLinkPattern.test(href)) {
+                                if (href && relativeLinkPattern.test(href)) {
                                     const targetParts = href.split("#");
                                     if (targetParts.length > 2) {
                                         throw `Invalid link: "${href}"`;

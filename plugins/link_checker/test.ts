@@ -97,3 +97,12 @@ Deno.test({
         }), GoldsmithLinkCheckerError);
     },
 });
+
+Deno.test({
+    name: "Anchor without href",
+    fn: async () => {
+        await testWithBrokenLinkAsync((files, goldsmith) => {
+            files["sources/bodyWithAnchorNoLink.html"] = { data: goldsmith.encodeUTF8(`<html><body><a id="no-link">No Link</a></body></html>`) };
+        });
+    },
+});
