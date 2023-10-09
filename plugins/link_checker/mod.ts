@@ -55,7 +55,7 @@ export function goldsmithLinkChecker(options?: GoldsmithLinkCheckerOptions): Gol
     const background = options?.background ?? (options?.delay !== undefined);
     const delay = options?.delay ?? defaultBackgroundProcessingDelayMS;
     const pattern = /^.+\.html$/; // TODO: Make customizable?
-    const plugin = (files, goldsmith) => {
+    const plugin: GoldsmithPlugin = (files, goldsmith) => {
         // Create a map of files to ids
         const fileToIds: { [filePath: string]: Set<string> } = {};
         for (const [filePath, file] of Object.entries(files)) {
