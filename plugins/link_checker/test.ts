@@ -6,7 +6,7 @@ function addTestData(files: GoldsmithFileCollection, goldsmith: GoldsmithObject)
     // Link sources
     files["sources/body.html"] = { data: goldsmith.encodeUTF8(`<html><body><a href="../targets/page1.html">Page 1</a></body></html>`) };
     files["sources/bodyWithAnchor.html"] = { data: goldsmith.encodeUTF8(`<html><body><a href="../targets/page2.html#anchor">Page 2, with anchor</a></body></html>`) };
-    files["sources/bodyWithInternalAnchor.html"] = { data: goldsmith.encodeUTF8(`<html><body><a href="#heading-5">Page 2, with anchor</a><h5 id="heading-5">Hi</h5></body></html>`) };
+    files["sources/bodyWithInternalAnchor.html"] = { data: goldsmith.encodeUTF8(`<html><body><a href="#heading-5">Page 2, with anchor</a><h5 name="heading-5">Hi</h5></body></html>`) };
     files["sources/link.html"] = { data: goldsmith.encodeUTF8(`<html><head><link rel="stylesheet" href="../css/test.css" /></head><body>Nothing here</body></html>`) };
     files["sources/image.html"] = { data: goldsmith.encodeUTF8(`<html><body><img src="../assets/img.png"></body></html>`) };
     files["sources/imageClosed.html"] = { data: goldsmith.encodeUTF8(`<html><body><img src="../assets/img.png"/></body></html>`) };

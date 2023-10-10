@@ -65,7 +65,7 @@ export function goldsmithLinkChecker(options?: GoldsmithLinkCheckerOptions): Gol
                 for (const token of Parser.parse(html)) {
                     switch (token.type) {
                         case 'open': {
-                            const id = token.attributes.id;
+                            const id = token.attributes.name ?? token.attributes.id;
                             if (id) {
                                 ids.add(id);
                             }
