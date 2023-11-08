@@ -1,4 +1,4 @@
-import { GoldsmithPlugin } from "../../mod.ts";
+import { GoldsmithFileCollection, GoldsmithPlugin } from "../../mod.ts";
 
 declare module "../../mod.ts" {
     interface GoldsmithMetadata {
@@ -21,14 +21,21 @@ export function goldsmithServe(options?: GoldsmithServeOptions): GoldsmithPlugin
     const automaticReloadClients: WebSocket[] = [];
     const textDecoder = new TextDecoder();
     const textEncoder = new TextEncoder();
-    return (_files, goldsmith) => {
+
+    const events = new EventTarget();
+    let currentFiles: GoldsmithFileCollection | undefined;
+
+    return (files, goldsmith) => {
+        const isRebuild = !!currentFiles;
+        currentFiles = files;
+
         if (!goldsmith.metadata().__goldsmithServeInitialized) {
             // Only start the server on the first build
             goldsmith.metadata().__goldsmithServeInitialized = true;
 
             // Register for build completion events, if needed
             if (automaticReloading) {
-                goldsmith.addEventListener("built", function () {
+                events.addEventListener("rebuilt", function () {
                     for (const socket of automaticReloadClients) {
                         try {
                             socket.send("updated");
@@ -36,11 +43,12 @@ export function goldsmithServe(options?: GoldsmithServeOptions): GoldsmithPlugin
                             // Ignore errors and assume client is no longer active
                         }
                     }
+
+                    goldsmith.stopPerformanceSpan("Rebuild");
                 });
             }
 
             // Start the server
-            const webRoot = goldsmith.destination();
             const server = Deno.listen({ hostname, port });
             console.log(`Serve: listening on: http://${hostname}:${port}/`);
 
@@ -60,8 +68,9 @@ export function goldsmithServe(options?: GoldsmithServeOptions): GoldsmithPlugin
                                         });
                                         await re.respondWith(response);
                                     } else {
-                                        const path = webRoot + (url.pathname.endsWith("/") ? url.pathname + "index.html" : url.pathname);
-                                        let content = await Deno.readFile(path);
+                                        // Serve directly from memory
+                                        const path = (url.pathname.endsWith("/") ? url.pathname + "index.html" : url.pathname).substring(1);
+                                        let content = currentFiles[path].data;
     
                                         let insertedAutomaticReloadingScript = false;
                                         if (automaticReloading && path.endsWith(".html")) {
@@ -83,7 +92,7 @@ export function goldsmithServe(options?: GoldsmithServeOptions): GoldsmithPlugin
                                 } catch (_e) {
                                     try {
                                         // Serve 404.html, if it exists
-                                        const content = await Deno.readTextFile(webRoot + "/404.html");
+                                        const content = currentFiles["404.html"].data;
                                         await re.respondWith(new Response(content, { status: 404, headers: { "content-type": "text/html" } }));
                                     } catch (_e2) {
                                         // Otherwise serve a 404 with no content
@@ -99,6 +108,12 @@ export function goldsmithServe(options?: GoldsmithServeOptions): GoldsmithPlugin
                     })();
                 }
             })();
+        }
+
+        // Trigger a reload as soon as this plugin is run since there's no need to wait for the files to be written to
+        // the file system when we're serving directly from memory
+        if (isRebuild) {
+            events.dispatchEvent(new CustomEvent("rebuilt"));
         }
     };
 }
