@@ -5,12 +5,21 @@ import { marked, Renderer } from "./deps/marked.esm.js";
 export interface goldsmithMarkdownOptions {
     replaceLinks?: (link: string) => string;
     highlight?: (code: string, language: string) => string;
+    cache?: boolean;
 }
+
+interface CacheEntry {
+    input: string;
+    output: string;
+}
+
+type Cache = { [id: string]: CacheEntry };
 
 const markdownPattern = /(.+)\.md$/;
 export function goldsmithMarkdown(options?: goldsmithMarkdownOptions): GoldsmithPlugin {
     const replaceLinks = options?.replaceLinks;
     const highlight = options?.highlight;
+    const cache: Cache | undefined = (options?.cache) ? {} : undefined;
     return function markdown (files, goldsmith) {
         marked.setOptions({
             ...marked.getDefaults(),
@@ -35,7 +44,22 @@ export function goldsmithMarkdown(options?: goldsmithMarkdownOptions): Goldsmith
             if (matches) {
                 const file = files[key];
                 const markdown = goldsmith.decodeUTF8(file.data);
-                const html = marked(markdown);
+
+                // If caching is enabled, check to see if there's an entry with identical input
+                const cacheEntry = cache?.[key];
+                const cached = (cacheEntry && cacheEntry.input === markdown);
+                const cachedHtml = cached ? cacheEntry.output : undefined;
+
+                const html = cachedHtml ?? marked(markdown);
+
+                // If caching is enabled but this entry was *not* cached, add to (or update) the cache
+                if (cache && !cached) {
+                    cache[key] = {
+                        input: markdown,
+                        output: html,
+                    };
+                }
+
                 file.data = goldsmith.encodeUTF8(html);
                 delete files[key];
                 files[`${matches[1]}.html`] = file;
