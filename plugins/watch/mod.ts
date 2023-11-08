@@ -26,12 +26,11 @@ export function goldsmithWatch(options?: GoldsmithWatchOptions): GoldsmithPlugin
             let outstanding = 0;
             const rebuild = () => {
                 if (--outstanding === 0) {
-                    console.log(`Watch: rebuilding...`);
+                    goldsmith.startPerformanceSpan("Rebuild");
                     (async () => {
                         try {
-                            const startTime = new Date();
                             await goldsmith.build();
-                            console.log(`Watch: rebuild complete (${(new Date()).valueOf() - startTime.valueOf()} ms).`);
+                            goldsmith.stopPerformanceSpan("Rebuild");
                             options?.onRebuildCompleted?.();
                         } catch (e) {
                             console.log(`Watch: rebuild error: ${e}`);
