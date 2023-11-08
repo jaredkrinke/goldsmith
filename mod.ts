@@ -141,6 +141,7 @@ export class GoldsmithObject {
     events: EventTarget = new EventTarget();
     textEncoder = new TextEncoder();
     textDecoder = new TextDecoder();
+    performanceSpans: { [key: string]: number } = {};
 
     constructor(options?: GoldsmithOptions) {
         this.options = options ?? {};
@@ -353,6 +354,21 @@ export class GoldsmithObject {
     /** Remove an event listener from Goldsmith. */
     removeEventListener(type: GoldsmithEventType, listener: (event: GoldsmithBuiltEvent) => void): void {
         this.events.removeEventListener(type, listener);
+    }
+
+    /** Start measuring a performance span. */
+    startPerformanceSpan(id: string): void {
+        this.performanceSpans[id] = Date.now();
+        console.log(`${id}ing...`);
+    }
+
+    /** Stops measuring a performance span. */
+    stopPerformanceSpan(id: string): void {
+        const startTime = this.performanceSpans[id];
+        if (startTime) {
+            console.log(`${id} complete (${Date.now() - startTime}ms).`)
+            delete this.performanceSpans[id];
+        }
     }
 }
 
